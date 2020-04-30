@@ -5,7 +5,15 @@ MCHFuse is a FUSE file system for mounting [Western Digital My Cloud Home](https
 It exposes the main storage area of your device using the
 [WD My Cloud Home Off-Device API](https://developer.westerndigital.com/develop/wd-my-cloud-home/api.html).
 
-## Installing
+## Installing latest release
+
+To quickly install the latest pre-built binary of mchfuse you can execute the following command:
+
+``` sh
+curl -L https://github.com/mnencia/mchfuse/raw/master/install_latest.sh | sudo sh
+```
+
+## Installing from source
 
 * Install the Go compiler suite and make; e.g. on Ubuntu:
 
