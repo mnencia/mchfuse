@@ -10,16 +10,29 @@ It exposes the main storage area of your device using the
 * Install the Go compiler suite and make; e.g. on Ubuntu:
 
   ``` sh
-  sudo apt-get install golang-go ca-certificates make
+  sudo apt-get install git golang-go ca-certificates make
   ```
 
-* Then check out MCHFuse project, and run
+* Then check out MCHFuse project
 
   ``` sh
+  git clone https://github.com/mnencia/mchfuse.git
+  ```
+
+* Then change directory to the just-checked-out work tree and build it
+
+  ``` sh
+  cd mchfuse
   make
   ```
 
   After the build, you find a `mchfuse` executable in the project root.
+
+* If you want to make `mchfuse` available as a system command, install it
+
+  ``` sh
+  sudo make install
+  ```
 
 ## Quickstart
 
@@ -55,18 +68,22 @@ Usage: mchfuse [flags] deviceName:devicePath mountpoint
   -u, --username string   mycloud.com username
 ```
 
-All the options can be specified in a config file with the format
+All the options can be specified in a configuration file with the format:
 
 ``` ini
 flag-name = value
 ```
 
-If you do not specify a UID and a GID, it inherits them from the context.
+You can pass the configuration using the `--config` flag, otherwise `mchfuse`
+loads the options from `/etc/mchfuse.conf` if it exists.
+
+If you do not specify a UID or a GID, it inherits the missing setting from the
+user that runs the command.
 
 ## Maturity
 
 This project is in alpha state. I've made it to access my device from Linux,
-and it works quite well for me. There are many things to improve starting
+and it works quite well for me. There are many things to improve, starting
 from performances.
 
 ## Known Limits
