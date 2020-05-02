@@ -36,9 +36,10 @@ type Client struct {
 	Scope         string         `json:"scope"`
 	TokenType     string         `json:"token_type"`
 	ExpiresIn     int            `json:"expires_in"`
-	UserID        string         `json:"user_id"`
+	UserID        string         `json:"user_id,omitempty"`
 	Configuration *Configuration `json:"configuration,omitempty"`
-	OSType        string         `json:"os_type"`
+	OSType        string         `json:"os_type,omitempty"`
+	HTTPClient    http.Client    `json:"-"`
 }
 
 func Login(username string, password string) (*Client, error) {
@@ -46,6 +47,8 @@ func Login(username string, password string) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	client := Client{Configuration: config, OSType: osType()}
 
 	req := map[string]string{
 		"grant_type": "http://auth0.com/oauth/grant-type/password-realm",
@@ -62,7 +65,7 @@ func Login(username string, password string) (*Client, error) {
 		return nil, err
 	}
 
-	resp, err := http.Post(
+	resp, err := client.HTTPClient.Post(
 		fmt.Sprintf("%s/oauth/token", config.GetString("cloud.service.urls", "service.auth0.url")),
 		"application/json",
 		bytes.NewBuffer(data),
@@ -76,7 +79,6 @@ func Login(username string, password string) (*Client, error) {
 		return nil, fmt.Errorf("unexpected status code %v logging in on %v", resp.StatusCode, resp.Request.URL)
 	}
 
-	client := Client{Configuration: config, OSType: osType()}
 	if err := client.unmarshalAuthResponse(resp); err != nil {
 		return nil, err
 	}
@@ -108,7 +110,7 @@ func (c *Client) refreshAccessToken() error {
 		return err
 	}
 
-	resp, err := http.Post(
+	resp, err := c.HTTPClient.Post(
 		fmt.Sprintf("%s/oauth/token", c.Configuration.GetString("cloud.service.urls", "service.auth0.url")),
 		"application/json",
 		bytes.NewBuffer(data),
@@ -192,9 +194,7 @@ func (c *Client) DeviceInfo() (*DeviceInfo, error) {
 		return nil, err
 	}
 
-	client := &http.Client{}
-
-	resp, err := client.Do(req)
+	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}

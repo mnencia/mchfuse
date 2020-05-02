@@ -100,9 +100,8 @@ func (d *Device) fileSearchParents(ids string, pageToken string) (*FileList, err
 	}
 
 	req.URL.RawQuery = q.Encode()
-	client := &http.Client{}
 
-	resp, err := client.Do(req)
+	resp, err := d.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -157,9 +156,7 @@ func (d *Device) fileSearchParentAndName(parentID string, name string) (*File, e
 	q.Add("fields", FileFields)
 	req.URL.RawQuery = q.Encode()
 
-	client := &http.Client{}
-
-	resp, err := client.Do(req)
+	resp, err := d.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -211,9 +208,7 @@ func (d *Device) fileByID(id string, file *File) (*File, error) {
 	q.Add("fields", FileFields)
 	req.URL.RawQuery = q.Encode()
 
-	client := &http.Client{}
-
-	resp, err := client.Do(req)
+	resp, err := d.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}

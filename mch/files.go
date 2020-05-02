@@ -114,9 +114,7 @@ func (f *File) Delete() error {
 		return err
 	}
 
-	client := &http.Client{}
-
-	resp, err := client.Do(req)
+	resp, err := f.client.HTTPClient.Do(req)
 	if err != nil {
 		return err
 	}
@@ -186,9 +184,7 @@ func (f *File) patch(reqJSON map[string]interface{}) (*http.Response, error) {
 
 	req.Header.Add("Content-Type", "application/json")
 
-	client := &http.Client{}
-
-	resp, err := client.Do(req)
+	resp, err := f.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -219,9 +215,7 @@ func (f *File) CreateDirectory(name string) (*File, error) {
 
 	multipartBody.AddContentType(req)
 
-	client := &http.Client{}
-
-	resp, err := client.Do(req)
+	resp, err := f.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -267,9 +261,7 @@ func (f *File) Read(dest []byte, offset int64) (int, error) {
 	endRange := offset + size - 1 //nolint:gomnd
 	req.Header.Add("Range", fmt.Sprintf("bytes=%d-%d", offset, endRange))
 
-	client := &http.Client{}
-
-	resp, err := client.Do(req)
+	resp, err := f.client.HTTPClient.Do(req)
 	if err != nil {
 		return 0, err
 	}
@@ -323,9 +315,7 @@ func (f *File) Create(name string) (*File, error) {
 	q.Add("done", "true")
 	req.URL.RawQuery = q.Encode()
 
-	client := &http.Client{}
-
-	resp, err := client.Do(req)
+	resp, err := f.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -363,9 +353,7 @@ func (f *File) Write(data []byte, offset int64) error {
 	q.Add("offset", strconv.FormatInt(offset, 10))
 	req.URL.RawQuery = q.Encode()
 
-	client := &http.Client{}
-
-	resp, err := client.Do(req)
+	resp, err := f.client.HTTPClient.Do(req)
 	if err != nil {
 		return err
 	}
@@ -400,9 +388,7 @@ func (f *File) Truncate(offset int64) error {
 	q.Add("offset", strconv.FormatInt(offset, 10))
 	req.URL.RawQuery = q.Encode()
 
-	client := &http.Client{}
-
-	resp, err := client.Do(req)
+	resp, err := f.client.HTTPClient.Do(req)
 	if err != nil {
 		return err
 	}
