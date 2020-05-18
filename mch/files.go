@@ -19,6 +19,7 @@ package mch
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -28,6 +29,8 @@ import (
 
 const DirectoryMimeType = "application/x.wd.dir"
 const FileFields = "id,eTag,parentID,childCount,mimeType,name,size,mTime,cTime"
+
+var ErrorInvalidOperation = errors.New("invalid operation")
 
 type File struct {
 	ID         string  `json:"id"`
@@ -57,7 +60,7 @@ func (f *File) IsDirectory() bool {
 
 func (f *File) ListDirectory() (map[string]File, error) {
 	if !f.IsDirectory() {
-		return nil, fmt.Errorf("%s is not a directory", f.Name)
+		return nil, fmt.Errorf("%s is not a directory: %w", f.Name, ErrorInvalidOperation)
 	}
 
 	files := make(map[string]File)
@@ -84,7 +87,7 @@ func (f *File) ListDirectory() (map[string]File, error) {
 
 func (f *File) LookupDirectory(name string) (*File, error) {
 	if !f.IsDirectory() {
-		return nil, fmt.Errorf("%s is not a directory", f.Name)
+		return nil, fmt.Errorf("%s is not a directory: %w", f.Name, ErrorInvalidOperation)
 	}
 
 	child, err := f.device.fileSearchParentAndName(f.ID, name)
@@ -130,10 +133,11 @@ func (f *File) Delete() error {
 		// File was not there
 	default:
 		return fmt.Errorf(
-			"unexpected status code %v deleting file %v at %v",
+			"status code %v deleting file %v at %v: %w",
 			resp.StatusCode,
 			f.ID,
 			resp.Request.URL,
+			ErrorUnexpectedStatusCode,
 		)
 	}
 
@@ -155,12 +159,13 @@ func (f *File) Rename(newParent *File, newName string) error {
 
 	if resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf(
-			"unexpected status code %v moving %v under %v named %v at %v",
+			"status code %v moving %v under %v named %v at %v: %w",
 			resp.StatusCode,
 			f.ID,
 			newParent.ID,
 			newName,
 			resp.Request.URL,
+			ErrorUnexpectedStatusCode,
 		)
 	}
 
@@ -224,11 +229,12 @@ func (f *File) CreateDirectory(name string) (*File, error) {
 
 	if resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf(
-			"unexpected status code %v creating directory %v under %v at %v",
+			"status code %v creating directory %v under %v at %v: %w",
 			resp.StatusCode,
 			name,
 			f.ID,
 			resp.Request.URL,
+			ErrorUnexpectedStatusCode,
 		)
 	}
 
@@ -240,7 +246,7 @@ func (f *File) CreateDirectory(name string) (*File, error) {
 
 func (f *File) Read(dest []byte, offset int64) (int, error) {
 	if f.IsDirectory() {
-		return 0, fmt.Errorf("%s is a directory", f.Name)
+		return 0, fmt.Errorf("%s is a directory: %w", f.Name, ErrorInvalidOperation)
 	}
 
 	size := int64(len(dest))
@@ -258,7 +264,7 @@ func (f *File) Read(dest []byte, offset int64) (int, error) {
 		return 0, err
 	}
 
-	endRange := offset + size - 1 //nolint:gomnd
+	endRange := offset + size - 1
 	req.Header.Add("Range", fmt.Sprintf("bytes=%d-%d", offset, endRange))
 
 	resp, err := f.client.HTTPClient.Do(req)
@@ -270,12 +276,13 @@ func (f *File) Read(dest []byte, offset int64) (int, error) {
 
 	if resp.StatusCode != http.StatusPartialContent {
 		return 0, fmt.Errorf(
-			"unexpected status code %v reading file %v offset %v size %v at %v",
+			"status code %v reading file %v offset %v size %v at %v: %w",
 			resp.StatusCode,
 			f.ID,
 			offset,
 			size,
 			resp.Request.URL,
+			ErrorUnexpectedStatusCode,
 		)
 	}
 
@@ -324,11 +331,12 @@ func (f *File) Create(name string) (*File, error) {
 
 	if resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf(
-			"unexpected status code %v creating file %v under %v at %v",
+			"status code %v creating file %v under %v at %v: %w",
 			resp.StatusCode,
 			name,
 			f.ID,
 			resp.Request.URL,
+			ErrorUnexpectedStatusCode,
 		)
 	}
 
@@ -362,10 +370,11 @@ func (f *File) Write(data []byte, offset int64) error {
 
 	if resp.StatusCode != http.StatusCreated {
 		return fmt.Errorf(
-			"unexpected status code %v writing file %v at %v",
+			"status code %v writing file %v at %v: %w",
 			resp.StatusCode,
 			f.ID,
 			resp.Request.URL,
+			ErrorUnexpectedStatusCode,
 		)
 	}
 
@@ -397,10 +406,11 @@ func (f *File) Truncate(offset int64) error {
 
 	if resp.StatusCode != http.StatusCreated {
 		return fmt.Errorf(
-			"unexpected status code %v writing file %v at %v",
+			"status code %v writing file %v at %v: %w",
 			resp.StatusCode,
 			f.ID,
 			resp.Request.URL,
+			ErrorUnexpectedStatusCode,
 		)
 	}
 
@@ -417,10 +427,11 @@ func (f *File) SetMeta(reqJSON map[string]interface{}) error {
 
 	if resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf(
-			"unexpected status code %v patching %v at %v",
+			"status code %v patching %v at %v: %w",
 			resp.StatusCode,
 			f.ID,
 			resp.Request.URL,
+			ErrorUnexpectedStatusCode,
 		)
 	}
 

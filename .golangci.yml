@@ -7,6 +7,7 @@ linters:
   # inverted configuration with `enable-all` and `disable` is not scalable during updates of golangci-lint
   disable-all: true
   enable:
+    - asciicheck
     - bodyclose
     - deadcode
     - depguard
@@ -21,6 +22,7 @@ linters:
     - gocritic
     - gocyclo
     - godox
+    - goerr113
     - gofmt
     - goimports
     - golint
@@ -35,6 +37,7 @@ linters:
     - maligned
     - misspell
     - nakedret
+    - nolintlint
     - prealloc
     - rowserrcheck
     - scopelint

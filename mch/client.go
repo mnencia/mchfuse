@@ -19,6 +19,7 @@ package mch
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -41,6 +42,8 @@ type Client struct {
 	OSType        string         `json:"os_type,omitempty"`
 	HTTPClient    http.Client    `json:"-"`
 }
+
+var ErrorUnexpectedStatusCode = errors.New("unexpected status code")
 
 func Login(username string, password string) (*Client, error) {
 	config, err := GetConfiguration()
@@ -76,7 +79,8 @@ func Login(username string, password string) (*Client, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code %v logging in on %v", resp.StatusCode, resp.Request.URL)
+		return nil, fmt.Errorf("status code %v logging in on %v: %w",
+			resp.StatusCode, resp.Request.URL, ErrorUnexpectedStatusCode)
 	}
 
 	if err := client.unmarshalAuthResponse(resp); err != nil {
@@ -121,7 +125,8 @@ func (c *Client) refreshAccessToken() error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("unexpected status code %v refreshing token at %v", resp.StatusCode, resp.Request.URL)
+		return fmt.Errorf("status code %v refreshing token at %v: %w", resp.StatusCode, resp.Request.URL,
+			ErrorUnexpectedStatusCode)
 	}
 
 	if err := c.unmarshalAuthResponse(resp); err != nil {
@@ -201,7 +206,8 @@ func (c *Client) DeviceInfo() (*DeviceInfo, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code %v getting deviceinfo on %v", resp.StatusCode, resp.Request.URL)
+		return nil, fmt.Errorf("status code %v getting deviceinfo on %v: %w", resp.StatusCode, resp.Request.URL,
+			ErrorUnexpectedStatusCode)
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)

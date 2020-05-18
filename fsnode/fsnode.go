@@ -18,6 +18,7 @@ package fsnode
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"reflect"
 	"syscall"
@@ -34,7 +35,9 @@ type MCHNode struct {
 	file *mch.File
 }
 
-// MCHNode must be InodeEmbedders
+var ErrorInvalidFilesystemStatus = errors.New("invalid filesytem status")
+
+// MCHNode must be InodeEmbedders.
 var _ = (fs.InodeEmbedder)((*MCHNode)(nil))
 
 func NewMCHNode(file *mch.File) *MCHNode {
@@ -49,7 +52,7 @@ func (mn *MCHNode) mode() uint32 {
 	return fuse.S_IFREG
 }
 
-// MCHNode must implement Readdir
+// MCHNode must implement Readdir.
 var _ = (fs.NodeReaddirer)((*MCHNode)(nil))
 
 func (mn *MCHNode) Readdir(ctx context.Context) (fs.DirStream, syscall.Errno) {
@@ -160,13 +163,14 @@ func (mn *MCHNode) updateChild(ctx context.Context, name string, info *mch.File)
 			childNode.file = info
 		}
 	} else {
-		return fmt.Errorf("got a child of type %T instead of expected *MCHNode", child.Operations())
+		return fmt.Errorf("got a child of type %T instead of expected *MCHNode: %w",
+			child.Operations(), ErrorInvalidFilesystemStatus)
 	}
 
 	return nil
 }
 
-// MCHNode must implement Getattr
+// MCHNode must implement Getattr.
 var _ = (fs.NodeGetattrer)((*MCHNode)(nil))
 
 func (mn *MCHNode) Getattr(ctx context.Context, file fs.FileHandle, out *fuse.AttrOut) syscall.Errno {

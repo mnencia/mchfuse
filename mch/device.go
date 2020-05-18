@@ -109,10 +109,11 @@ func (d *Device) fileSearchParents(ids string, pageToken string) (*FileList, err
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(
-			"unexpected status code %v searching files by parents %v at %v",
+			"status code %v searching files by parents %v at %v: %w",
 			resp.StatusCode,
 			ids,
 			resp.Request.URL,
+			ErrorUnexpectedStatusCode,
 		)
 	}
 
@@ -168,11 +169,12 @@ func (d *Device) fileSearchParentAndName(parentID string, name string) (*File, e
 		return nil, nil
 	default:
 		return nil, fmt.Errorf(
-			"unexpected status code %v searching files by parent %v and name %v at %v",
+			"status code %v searching files by parent %v and name %v at %v: %w",
 			resp.StatusCode,
 			parentID,
 			name,
 			resp.Request.URL,
+			ErrorUnexpectedStatusCode,
 		)
 	}
 
@@ -216,10 +218,11 @@ func (d *Device) fileByID(id string, file *File) (*File, error) {
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(
-			"unexpected status code %v retrieveing file metadata %v at %v",
+			"status code %v retrieveing file metadata %v at %v: %w",
 			resp.StatusCode,
 			id,
 			resp.Request.URL,
+			ErrorUnexpectedStatusCode,
 		)
 	}
 
@@ -258,7 +261,8 @@ func (d *Device) GetFileByPath(path string) (*File, error) {
 
 	for _, dir := range strings.Split(path, "/") {
 		if !current.IsDirectory() {
-			return nil, fmt.Errorf("path component %s is not a directory", current.Name)
+			return nil, fmt.Errorf("path component %s is not a directory: %w", current.Name,
+				ErrorInvalidOperation)
 		}
 
 		files, err := current.ListDirectory()
@@ -268,7 +272,7 @@ func (d *Device) GetFileByPath(path string) (*File, error) {
 
 		entry, found := files[dir]
 		if !found {
-			return nil, fmt.Errorf("path component %s not found", dir)
+			return nil, fmt.Errorf("path component %s not found: %w", dir, ErrorInvalidOperation)
 		}
 
 		current = &entry
