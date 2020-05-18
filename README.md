@@ -5,7 +5,7 @@ MCHFuse is a FUSE file system for mounting [Western Digital My Cloud Home](https
 It exposes the main storage area of your device using the
 [WD My Cloud Home Off-Device API](https://developer.westerndigital.com/develop/wd-my-cloud-home/api.html).
 
-## Installing latest release
+## Installing the latest release
 
 To quickly install the latest pre-built binary of mchfuse you can execute the following command:
 
@@ -42,13 +42,13 @@ curl -L https://github.com/mnencia/mchfuse/raw/master/install_latest.sh | sudo s
   sudo make install
   ```
 
-## Quickstart
+## Quick start
 
 You can mount your device using the following command:
 
 ``` sh
 cat > mchfuse.conf < 'EOF'
-username = YOURUSERNAME
+username = EMAIL
 password = PASSWORD
 EOF
 
@@ -57,11 +57,21 @@ chmod 600 mchfuse.conf
 ./mchfuse -c mchfuse.conf DEVICE_NAME[:device/path] /mount/point &
 ```
 
-You can specify all the command line options in a config file with the following format:
+The `EMAIL` and `PASSWORD` are the one used to access <https://home.mycloud.com/>
+
+The `DEVICE_NAME` is the name assigned to the device during the initial configuration.
+If you happen to use a wrong name, the resulting error message contain the list of valid discovered
+device names.
+
+You can unmount the device using the usual `umount` command:
 
 ``` sh
 umount /mount/point
 ```
+
+> **NOTE:** the filesystem will be only accessible from the user who executed
+> the `mchfuse` command unless you specify the flag `--allow-other`
+> either on command line or in the configuration file (i.e. `allow-other = true`)
 
 ## Usage
 
