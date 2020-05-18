@@ -7,7 +7,7 @@ It exposes the main storage area of your device using the
 
 ## Installing the latest release
 
-To quickly install the latest pre-built binary of mchfuse you can execute the following command:
+To quickly install the latest pre-built binary of MCHFuse you can execute the following command:
 
 ``` sh
 curl -L https://github.com/mnencia/mchfuse/raw/master/install_latest.sh | sudo sh
@@ -54,7 +54,7 @@ EOF
 
 chmod 600 mchfuse.conf
 
-./mchfuse -c mchfuse.conf DEVICE_NAME[:device/path] /mount/point &
+mchfuse -c mchfuse.conf DEVICE_NAME[:device/path] /mount/point &
 ```
 
 The `EMAIL` and `PASSWORD` are the one used to access <https://home.mycloud.com/>
@@ -63,15 +63,15 @@ The `DEVICE_NAME` is the name assigned to the device during the initial configur
 If you happen to use a wrong name, the resulting error message contain the list of valid discovered
 device names.
 
+> **NOTE:** the filesystem will be only accessible from the user who executed
+> the `mchfuse` command unless you specify the flag `--allow-other`
+> either on command line or in the configuration file (i.e. `allow-other = true`)
+
 You can unmount the device using the usual `umount` command:
 
 ``` sh
 umount /mount/point
 ```
-
-> **NOTE:** the filesystem will be only accessible from the user who executed
-> the `mchfuse` command unless you specify the flag `--allow-other`
-> either on command line or in the configuration file (i.e. `allow-other = true`)
 
 ## Usage
 
