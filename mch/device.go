@@ -21,8 +21,10 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"strings"
+	"time"
 )
 
 type DeviceInfo struct {
@@ -45,11 +47,13 @@ type Device struct {
 	SerialNumber         string        `json:"serialNumber"`
 	APIVersion           string        `json:"apiVersion"`
 	client               *Client
+	connectionMode       DeviceConnectionMode
+	connectionCheckedAt  time.Time
 }
 
 type DeviceNetwork struct {
-	LocalIPAddress              string `json:"localIpAddress"`
-	ExternalIPAddress           string `json:"externalIpAddress"`
+	LocalIPAddress              net.IP `json:"localIpAddress"`
+	ExternalIPAddress           net.IP `json:"externalIpAddress"`
 	LocalHTTPPort               int    `json:"localHttpPort"`
 	LocalHTTPSPort              int    `json:"localHttpsPort"`
 	PortForwardPort             int    `json:"portForwardPort"`
@@ -63,6 +67,30 @@ type DeviceNetwork struct {
 	PortForwardInfoUpdateStatus string `json:"portForwardInfoUpdateStatus"`
 }
 
+// DeviceConnectionMode represents the current connection status for a device.
+type DeviceConnectionMode int
+
+const (
+	UnknownConnection DeviceConnectionMode = iota
+	InternalConnection
+	ExternalConnection
+)
+
+const ConnectionRecheckTime = 30 * time.Second
+
+func (dm DeviceConnectionMode) String() string {
+	switch dm {
+	case UnknownConnection:
+		return "UnknownConnectionMode"
+	case InternalConnection:
+		return "InternalConnectionMode"
+	case ExternalConnection:
+		return "ExternalConnectionMode"
+	default:
+		return fmt.Sprintf("DeviceConnectionMode(%v)", int(dm))
+	}
+}
+
 func (di DeviceInfo) Find(name string) *Device {
 	for _, device := range di.Data {
 		if device.Name == name || device.DeviceID == name {
@@ -73,8 +101,38 @@ func (di DeviceInfo) Find(name string) *Device {
 	return nil
 }
 
+func (d *Device) checkConnectionMode() bool {
+	oldMode := d.connectionMode
+	address := d.Network.InternalDNSName
+	timeout := 1 * time.Second
+
+	conn, err := net.DialTimeout("tcp", address, timeout)
+	if err != nil {
+		d.connectionMode = ExternalConnection
+	} else {
+		_ = conn.Close()
+		d.connectionMode = InternalConnection
+	}
+
+	d.connectionCheckedAt = time.Now()
+
+	return oldMode != d.connectionMode
+}
+
+func (d *Device) DeviceURI() string {
+	if d.connectionMode == UnknownConnection || time.Since(d.connectionCheckedAt) > ConnectionRecheckTime {
+		d.checkConnectionMode()
+	}
+
+	if d.connectionMode == ExternalConnection {
+		return d.Network.ExternalURI
+	}
+
+	return d.Network.InternalURL
+}
+
 func (d *Device) getURI(path string) string {
-	url := fmt.Sprintf("%s/sdk/%s", d.Network.InternalURL, strings.TrimLeft(path, "/"))
+	url := fmt.Sprintf("%s/sdk/%s", d.DeviceURI(), strings.TrimLeft(path, "/"))
 	return url
 }
 
@@ -99,6 +157,10 @@ func (d *Device) api(
 
 	resp, err := d.client.HTTPClient.Do(req)
 	if err != nil {
+		if d.checkConnectionMode() {
+			return nil, fmt.Errorf("connection mode changed after an error: %w", err)
+		}
+
 		return nil, err
 	}
 
