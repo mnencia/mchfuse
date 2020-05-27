@@ -128,7 +128,7 @@ func (d *Device) DeviceURI() string {
 		return d.Network.ExternalURI
 	}
 
-	return d.Network.InternalURL
+	return fmt.Sprintf("https://%s", d.Network.InternalDNSName)
 }
 
 func (d *Device) getURI(path string) string {

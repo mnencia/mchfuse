@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   locally) or when an API call returns a connection error (to allow a
   quick transition from Internal to External endpoint if the device
   become unreachable locally).
+- Always use SSL to access a device
 
 ## [0.0.1] - 2020-04-30
 
