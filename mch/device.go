@@ -73,35 +73,51 @@ func (di DeviceInfo) Find(name string) *Device {
 	return nil
 }
 
-func (d *Device) NewAuthorizedRequest(method, path string, body io.Reader) (*http.Request, error) {
+func (d *Device) getURI(path string) string {
 	url := fmt.Sprintf("%s/sdk/%s", d.Network.InternalURL, strings.TrimLeft(path, "/"))
+	return url
+}
 
-	req, err := d.client.NewAuthorizedRequest(method, url, body)
+func (d *Device) api(
+	method, path string,
+	body io.Reader,
+	requestMutator func(*http.Request),
+) (
+	*http.Response,
+	error,
+) {
+	uri := d.getURI(path)
+
+	req, err := d.client.NewAuthorizedRequest(method, uri, body)
 	if err != nil {
 		return nil, err
 	}
 
-	return req, nil
+	if requestMutator != nil {
+		requestMutator(req)
+	}
+
+	resp, err := d.client.HTTPClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }
 
 func (d *Device) fileSearchParents(ids string, pageToken string) (*FileList, error) {
-	req, err := d.NewAuthorizedRequest("GET", "/v2/filesSearch/parents", nil)
-	if err != nil {
-		return nil, err
-	}
+	resp, err := d.api("GET", "/v2/filesSearch/parents", nil, func(req *http.Request) {
+		q := req.URL.Query()
+		q.Add("ids", ids)
+		q.Add("fields", "pageToken,"+FileFields)
+		q.Add("hidden", d.client.OSType)
 
-	q := req.URL.Query()
-	q.Add("ids", ids)
-	q.Add("fields", "pageToken,"+FileFields)
-	q.Add("hidden", d.client.OSType)
+		if pageToken != "" {
+			q.Add("pageToken", pageToken)
+		}
 
-	if pageToken != "" {
-		q.Add("pageToken", pageToken)
-	}
-
-	req.URL.RawQuery = q.Encode()
-
-	resp, err := d.client.HTTPClient.Do(req)
+		req.URL.RawQuery = q.Encode()
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -142,22 +158,18 @@ func (d *Device) fileSearchParents(ids string, pageToken string) (*FileList, err
 }
 
 func (d *Device) fileSearchParentAndName(parentID string, name string) (*File, error) {
-	req, err := d.NewAuthorizedRequest(
+	resp, err := d.api(
 		"GET",
 		"/v2/filesSearch/parentAndName",
 		nil,
+		func(req *http.Request) {
+			q := req.URL.Query()
+			q.Add("name", name)
+			q.Add("parentID", parentID)
+			q.Add("fields", FileFields)
+			req.URL.RawQuery = q.Encode()
+		},
 	)
-	if err != nil {
-		return nil, err
-	}
-
-	q := req.URL.Query()
-	q.Add("name", name)
-	q.Add("parentID", parentID)
-	q.Add("fields", FileFields)
-	req.URL.RawQuery = q.Encode()
-
-	resp, err := d.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -197,20 +209,16 @@ func (d *Device) fileSearchParentAndName(parentID string, name string) (*File, e
 }
 
 func (d *Device) fileByID(id string, file *File) (*File, error) {
-	req, err := d.NewAuthorizedRequest(
+	resp, err := d.api(
 		"GET",
 		fmt.Sprintf("/v2/files/%s", id),
 		nil,
+		func(req *http.Request) {
+			q := req.URL.Query()
+			q.Add("fields", FileFields)
+			req.URL.RawQuery = q.Encode()
+		},
 	)
-	if err != nil {
-		return nil, err
-	}
-
-	q := req.URL.Query()
-	q.Add("fields", FileFields)
-	req.URL.RawQuery = q.Encode()
-
-	resp, err := d.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}

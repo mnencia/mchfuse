@@ -108,20 +108,15 @@ func (f *File) Refresh() error {
 }
 
 func (f *File) Delete() error {
-	req, err := f.device.NewAuthorizedRequest(
+	resp, err := f.device.api(
 		"DELETE",
 		fmt.Sprintf("/v2/files/%s", f.ID),
+		nil,
 		nil,
 	)
 	if err != nil {
 		return err
 	}
-
-	resp, err := f.client.HTTPClient.Do(req)
-	if err != nil {
-		return err
-	}
-
 	defer resp.Body.Close()
 
 	switch resp.StatusCode {
@@ -178,18 +173,14 @@ func (f *File) patch(reqJSON map[string]interface{}) (*http.Response, error) {
 		return nil, err
 	}
 
-	req, err := f.device.NewAuthorizedRequest(
+	resp, err := f.device.api(
 		"PATCH",
 		fmt.Sprintf("/v2/files/%s", f.ID),
 		bytes.NewBuffer(data),
+		func(req *http.Request) {
+			req.Header.Add("Content-Type", "application/json")
+		},
 	)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", "application/json")
-
-	resp, err := f.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -209,18 +200,14 @@ func (f *File) CreateDirectory(name string) (*File, error) {
 		return nil, err
 	}
 
-	req, err := f.device.NewAuthorizedRequest(
+	resp, err := f.device.api(
 		"POST",
 		"/v2/files",
 		multipartBody.Buffer(),
+		func(req *http.Request) {
+			multipartBody.AddContentType(req)
+		},
 	)
-	if err != nil {
-		return nil, err
-	}
-
-	multipartBody.AddContentType(req)
-
-	resp, err := f.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -255,19 +242,15 @@ func (f *File) Read(dest []byte, offset int64) (int, error) {
 		return 0, nil
 	}
 
-	req, err := f.device.NewAuthorizedRequest(
+	resp, err := f.device.api(
 		"GET",
 		fmt.Sprintf("/v3/files/%s/content", f.ID),
 		nil,
+		func(req *http.Request) {
+			endRange := offset + size - 1
+			req.Header.Add("Range", fmt.Sprintf("bytes=%d-%d", offset, endRange))
+		},
 	)
-	if err != nil {
-		return 0, err
-	}
-
-	endRange := offset + size - 1
-	req.Header.Add("Range", fmt.Sprintf("bytes=%d-%d", offset, endRange))
-
-	resp, err := f.client.HTTPClient.Do(req)
 	if err != nil {
 		return 0, err
 	}
@@ -307,22 +290,18 @@ func (f *File) Create(name string) (*File, error) {
 		return nil, err
 	}
 
-	req, err := f.device.NewAuthorizedRequest(
+	resp, err := f.device.api(
 		"POST",
 		"/v2/files/resumable",
 		multipartBody.Buffer(),
+		func(req *http.Request) {
+			multipartBody.AddContentType(req)
+
+			q := req.URL.Query()
+			q.Add("done", "true")
+			req.URL.RawQuery = q.Encode()
+		},
 	)
-	if err != nil {
-		return nil, err
-	}
-
-	multipartBody.AddContentType(req)
-
-	q := req.URL.Query()
-	q.Add("done", "true")
-	req.URL.RawQuery = q.Encode()
-
-	resp, err := f.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -347,21 +326,17 @@ func (f *File) Create(name string) (*File, error) {
 }
 
 func (f *File) Write(data []byte, offset int64) error {
-	req, err := f.device.NewAuthorizedRequest(
+	resp, err := f.device.api(
 		"POST",
 		fmt.Sprintf("/v2/files/%s/resumable", f.ID),
 		bytes.NewBuffer(data),
+		func(req *http.Request) {
+			q := req.URL.Query()
+			q.Add("done", "true")
+			q.Add("offset", strconv.FormatInt(offset, 10))
+			req.URL.RawQuery = q.Encode()
+		},
 	)
-	if err != nil {
-		return err
-	}
-
-	q := req.URL.Query()
-	q.Add("done", "true")
-	q.Add("offset", strconv.FormatInt(offset, 10))
-	req.URL.RawQuery = q.Encode()
-
-	resp, err := f.client.HTTPClient.Do(req)
 	if err != nil {
 		return err
 	}
@@ -382,22 +357,18 @@ func (f *File) Write(data []byte, offset int64) error {
 }
 
 func (f *File) Truncate(offset int64) error {
-	req, err := f.device.NewAuthorizedRequest(
+	resp, err := f.device.api(
 		"POST",
 		fmt.Sprintf("/v2/files/%s/resumable", f.ID),
 		nil,
+		func(req *http.Request) {
+			q := req.URL.Query()
+			q.Add("done", "true")
+			q.Add("truncate", "true")
+			q.Add("offset", strconv.FormatInt(offset, 10))
+			req.URL.RawQuery = q.Encode()
+		},
 	)
-	if err != nil {
-		return err
-	}
-
-	q := req.URL.Query()
-	q.Add("done", "true")
-	q.Add("truncate", "true")
-	q.Add("offset", strconv.FormatInt(offset, 10))
-	req.URL.RawQuery = q.Encode()
-
-	resp, err := f.client.HTTPClient.Do(req)
 	if err != nil {
 		return err
 	}
