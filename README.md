@@ -5,6 +5,17 @@ MCHFuse is a FUSE file system for mounting [Western Digital My Cloud Home](https
 It exposes the main storage area of your device using the
 [WD My Cloud Home Off-Device API](https://developer.westerndigital.com/develop/wd-my-cloud-home/api.html).
 
+## Prerequisites
+
+To compile MCHFuse you need at least go 1.13.
+
+To run MCHFuse on OSX you need `osxfuse` extension. You can install it with Homebrew
+using the  command:
+
+ ``` sh
+ brew cask install osxfuse
+ ```
+
 ## Installing the latest release
 
 To quickly install the latest pre-built binary of MCHFuse you can execute the following command:
@@ -98,6 +109,11 @@ loads the options from `/etc/mchfuse.conf` if it exists.
 If you do not specify a UID or a GID, it inherits the missing setting from the
 user that runs the command.
 
+> **NOTE:** `mchfuse` does not demonize itself, but runs in the foreground.
+> If you want to run it in the background you must use the `&` character
+> at the end of the command line, or any other way supported by your shell.
+> (e.g. on posix shells, `CTRL-Z` followed by `bg` command)
+
 ## Maturity
 
 This project is in alpha state. I've made it to access my device from Linux,
@@ -107,6 +123,7 @@ from performances.
 ## Known Limits
 
 * For the moment, you must be on the same network of the device
+* Write performances need improvements
 
 ## TODO
 
