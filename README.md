@@ -21,7 +21,7 @@ using the  command:
 To quickly install the latest pre-built binary of MCHFuse you can execute the following command:
 
 ``` sh
-curl -L https://github.com/mnencia/mchfuse/raw/master/install_latest.sh | sudo sh
+curl -sSfL https://github.com/mnencia/mchfuse/raw/master/install.sh | sudo sh -s -- -b /usr/local/bin
 ```
 
 ## Installing from source
