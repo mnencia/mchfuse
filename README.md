@@ -58,7 +58,7 @@ curl -sSfL https://github.com/mnencia/mchfuse/raw/master/install.sh | sudo sh -s
 You can mount your device using the following command:
 
 ``` sh
-cat > mchfuse.conf < 'EOF'
+cat > mchfuse.conf << 'EOF'
 username = EMAIL
 password = PASSWORD
 EOF
