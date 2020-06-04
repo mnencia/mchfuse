@@ -12,9 +12,9 @@ To compile MCHFuse you need at least go 1.13.
 To run MCHFuse on OSX you need `osxfuse` extension. You can install it with Homebrew
 using the  command:
 
- ``` sh
- brew cask install osxfuse
- ```
+``` sh
+brew cask install osxfuse
+```
 
 ## Installing the latest release
 
@@ -122,12 +122,10 @@ from performances.
 
 ## Known Limits
 
-* For the moment, you must be on the same network of the device
 * Write performances need improvements
 
 ## TODO
 
-* Device locality detection to allow accessing the device remotely
 * Mount helper, to support mounting from `/etc/fstab`
 * Performance tests
 * Device list command

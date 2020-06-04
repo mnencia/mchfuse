@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2020-06-04
+
 - Reuse http.Client to improve performances. ([#1](https://github.com/mnencia/mchfuse/issues/1))
 - Detect whether the device is reachable locally
 
@@ -24,5 +26,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/mnencia/mchfuse/compare/v0.0.1...HEAD
+[Unreleased]: https://github.com/mnencia/mchfuse/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/mnencia/mchfuse/releases/tag/v0.1.0
 [0.0.1]: https://github.com/mnencia/mchfuse/releases/tag/v0.0.1
