@@ -188,18 +188,20 @@ func main() {
 		log.Fatalf("Failure searching for path %s: %s", devicePath, err)
 	}
 
-	if err := mount(file, mountPoint, config); err != nil {
+	if err := mount(file, source, mountPoint, config); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func mount(file *mch.File, mountPoint string, config config) error {
+func mount(file *mch.File, source, mountPoint string, config config) error {
 	mchRoot := fsnode.NewMCHNode(file)
 	sec := time.Second
 	mountOpts := &fs.Options{
 		MountOptions: fuse.MountOptions{
 			AllowOther: config.AllowOther,
 			Debug:      config.Debug,
+			FsName:     source,
+			Name:       "mchfuse",
 		},
 		UID:          uint32(config.UID),
 		GID:          uint32(config.GID),
