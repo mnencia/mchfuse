@@ -144,7 +144,7 @@ func main() {
 	config := parseConfig()
 
 	if len(flag.Args()) <= mountPointPos {
-		fmt.Printf("Usage: %v [flags] deviceName:devicePath mountpoint\n", path.Base(os.Args[0]))
+		fmt.Printf("Usage: %v [flags] deviceName[:devicePath] mountpoint\n", path.Base(os.Args[0]))
 		flag.PrintDefaults()
 		os.Exit(1)
 	}

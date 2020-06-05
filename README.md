@@ -7,9 +7,9 @@ It exposes the main storage area of your device using the
 
 ## Prerequisites
 
-To compile MCHFuse you need at least go 1.13.
+To compile MCHFuse, you need at least go 1.13.
 
-To run MCHFuse on OSX you need `osxfuse` extension. You can install it with Homebrew
+To run MCHFuse on OSX, you need `osxfuse` extension. You can install it with Homebrew
 using the  command:
 
 ``` sh
@@ -18,7 +18,7 @@ brew cask install osxfuse
 
 ## Installing the latest release
 
-To quickly install the latest pre-built binary of MCHFuse you can execute the following command:
+To quickly install the latest pre-built binary of MCHFuse, you can execute the following command:
 
 ``` sh
 curl -sSfL https://github.com/mnencia/mchfuse/raw/master/install.sh | sudo sh -s -- -b /usr/local/bin
@@ -53,7 +53,7 @@ curl -sSfL https://github.com/mnencia/mchfuse/raw/master/install.sh | sudo sh -s
   sudo make install
   ```
 
-## Quick start
+## Quickstart
 
 You can mount your device using the following command:
 
@@ -65,29 +65,37 @@ EOF
 
 chmod 600 mchfuse.conf
 
-mchfuse -c mchfuse.conf DEVICE_NAME[:device/path] /mount/point &
+mchfuse -c mchfuse.conf DEVICE_NAME MOUNT_POINT &
 ```
 
-The `EMAIL` and `PASSWORD` are the one used to access <https://home.mycloud.com/>
+The `EMAIL` and `PASSWORD` are the ones used to access <https://home.mycloud.com/>.
 
 The `DEVICE_NAME` is the name assigned to the device during the initial configuration.
-If you happen to use a wrong name, the resulting error message contain the list of valid discovered
-device names.
+If you happen to use a wrong name, the resulting error message contain the list
+of valid discovered device names.
+
+Replace `MOUNT_POINT` with the actual path where you want to see the content
+of the device. (e.g. `/mnt/mydevice`)
+
+Pay attention to the final `&` that is needed to put the process in the background.
+
+After the last command, you should see the content of the mounted device available
+in the mount point folder.
 
 > **NOTE:** the filesystem will be only accessible from the user who executed
 > the `mchfuse` command unless you specify the flag `--allow-other`
-> either on command line or in the configuration file (i.e. `allow-other = true`)
+> either on the command line or in the configuration file (i.e. `allow-other = true`)
 
 You can unmount the device using the usual `umount` command:
 
 ``` sh
-umount /mount/point
+umount MOUNT_POINT
 ```
 
 ## Usage
 
 ``` plain
-Usage: mchfuse [flags] deviceName:devicePath mountpoint
+Usage: mchfuse [flags] deviceName[:devicePath] mountpoint
   -a, --allow-other       allow other users
   -c, --config string     config file path
   -d, --debug             activate debug output
@@ -108,6 +116,17 @@ loads the options from `/etc/mchfuse.conf` if it exists.
 
 If you do not specify a UID or a GID, it inherits the missing setting from the
 user that runs the command.
+
+The `deviceName` is the name assigned to the device during the initial configuration.
+If you happen to use a wrong name, the resulting error message contain the list of
+valid discovered device names.
+
+By default, MCHFuse mounts the root of the device, but you can append a `devicePath`
+after a `:` separator, to start from a subdirectory.
+(e.g. `myDevice:linuxData` uses the `linuxData` folder inside `myDevice` root)
+
+The `mountpoint` is any directory accessible from the current user.
+If the path doesn't exist, MCHFuse tries to create it.
 
 > **NOTE:** `mchfuse` does not demonize itself, but runs in the foreground.
 > If you want to run it in the background you must use the `&` character
