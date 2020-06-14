@@ -65,7 +65,7 @@ EOF
 
 chmod 600 mchfuse.conf
 
-mchfuse -c mchfuse.conf DEVICE_NAME MOUNT_POINT &
+mchfuse -c mchfuse.conf DEVICE_NAME MOUNT_POINT
 ```
 
 The `EMAIL` and `PASSWORD` are the ones used to access <https://home.mycloud.com/>.
@@ -76,8 +76,6 @@ of valid discovered device names.
 
 Replace `MOUNT_POINT` with the actual path where you want to see the content
 of the device. (e.g. `/mnt/mydevice`)
-
-Pay attention to the final `&` that is needed to put the process in the background.
 
 After the last command, you should see the content of the mounted device available
 in the mount point folder.
@@ -99,6 +97,7 @@ Usage: mchfuse [flags] deviceName[:devicePath] mountpoint
   -a, --allow-other       allow other users
   -c, --config string     config file path
   -d, --debug             activate debug output
+  -f, --foreground        do not demonize
   -G, --gid int           set the group of the files in the filesystem (default -1)
   -p, --password string   mycloud.com password
   -U, --uid int           set the owner of the files in the filesystem (default -1)
@@ -128,10 +127,8 @@ after a `:` separator, to start from a subdirectory.
 The `mountpoint` is any directory accessible from the current user.
 If the path doesn't exist, MCHFuse tries to create it.
 
-> **NOTE:** `mchfuse` does not demonize itself, but runs in the foreground.
-> If you want to run it in the background you must use the `&` character
-> at the end of the command line, or any other way supported by your shell.
-> (e.g. on posix shells, `CTRL-Z` followed by `bg` command)
+> **NOTE:** `mchfuse` demonize itself, eventual errors raised by the background
+> process will end up in the syslog with priority NOTICE and tag "mchfuse".
 
 ## Maturity
 

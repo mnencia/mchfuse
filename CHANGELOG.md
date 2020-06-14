@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Send the process in the background automatically
+
 ## [0.1.0] - 2020-06-04
 
 - Reuse http.Client to improve performances. ([#1](https://github.com/mnencia/mchfuse/issues/1))

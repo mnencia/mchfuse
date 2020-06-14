@@ -19,7 +19,9 @@ package main
 import (
 	"fmt"
 	"log"
+	"log/syslog"
 	"os"
+	"os/exec"
 	"path"
 	"strings"
 	"syscall"
@@ -47,6 +49,7 @@ type config struct {
 	Username   string `toml:"username"`
 	Password   string `toml:"password"`
 	Debug      bool   `toml:"debug"`
+	Foreground bool   `toml:"foreground"`
 	AllowOther bool   `toml:"allow-other"`
 	UID        int    `toml:"uid"`
 	GID        int    `toml:"gid"`
@@ -57,6 +60,7 @@ func parseConfig() config {
 	username := flag.StringP("username", "u", "", "mycloud.com username ")
 	password := flag.StringP("password", "p", "", "mycloud.com password")
 	debug := flag.BoolP("debug", "d", false, "activate debug output")
+	foreground := flag.BoolP("foreground", "f", false, "do not demonize")
 	allowOther := flag.BoolP("allow-other", "a", false, "allow other users")
 	uid := flag.IntP("uid", "U", -1, "set the owner of the files in the filesystem")
 	gid := flag.IntP("gid", "G", -1, "set the group of the files in the filesystem")
@@ -74,6 +78,10 @@ func parseConfig() config {
 
 	if *debug {
 		c.Debug = true
+	}
+
+	if *foreground {
+		c.Foreground = true
 	}
 
 	if *allowOther {
@@ -188,9 +196,56 @@ func main() {
 		log.Fatalf("Failure searching for path %s: %s", devicePath, err)
 	}
 
+	if !config.Foreground {
+		if os.Getppid() > 1 {
+			if _, err := demonize(); err != nil {
+				log.Fatalf("Error demonising: %s", err)
+			}
+
+			os.Exit(0)
+		}
+
+		// Logging output must go to syslog as stderr is not available in a daemon process
+		setSyslogLogger()
+	}
+
 	if err := mount(file, source, mountPoint, config); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func setSyslogLogger() {
+	syslogWriter, e := syslog.New(syslog.LOG_NOTICE, "mchfuse")
+	if e == nil {
+		log.SetOutput(syslogWriter)
+	}
+}
+
+func demonize() (int, error) {
+	executable, err := os.Executable()
+	if err != nil {
+		return 0, err
+	}
+
+	args := os.Args[1:]
+	cmd := exec.Command(executable, args...)
+	cmd.Env = os.Environ()
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		// Setsid is used to detach the process from the parent (normally a shell)
+		//
+		// The disowning of a child process is accomplished by executing the system call
+		// setpgrp() or setsid(), (both of which have the same functionality) as soon as
+		// the child is forked. These calls create a new process session group, make the
+		// child process the session leader, and set the process group ID to the process
+		// ID of the child. https://bsdmag.org/unix-kernel-system-calls/
+		Setsid: true,
+	}
+
+	if err := cmd.Start(); err != nil {
+		return 0, err
+	}
+
+	return cmd.Process.Pid, nil
 }
 
 func mount(file *mch.File, source, mountPoint string, config config) error {
