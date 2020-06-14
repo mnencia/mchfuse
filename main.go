@@ -23,6 +23,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -46,95 +47,160 @@ const (
 )
 
 type config struct {
-	Username   string `toml:"username"`
-	Password   string `toml:"password"`
-	Debug      bool   `toml:"debug"`
-	Foreground bool   `toml:"foreground"`
-	AllowOther bool   `toml:"allow-other"`
-	UID        int    `toml:"uid"`
-	GID        int    `toml:"gid"`
+	ConfigFilePath string `toml:"-"`
+	Username       string `toml:"username"`
+	Password       string `toml:"password"`
+	Debug          bool   `toml:"debug"`
+	Foreground     bool   `toml:"foreground"`
+	AllowOther     bool   `toml:"allow-other"`
+	UID            int    `toml:"uid"`
+	GID            int    `toml:"gid"`
+}
+
+func (c *config) loadMountOptions(options string) {
+	optionsMap := parseOptions(options)
+	for key, val := range optionsMap {
+		switch key {
+		case "rw", "ro", "dev", "nodev", "suid", "nosuid":
+			// ignoring these options
+		case "config":
+			c.ConfigFilePath = val
+		case "username":
+			c.Username = val
+		case "password":
+			c.Password = val
+		case "debug":
+			c.Debug = true
+		case "foreground":
+			c.Foreground = true
+		case "allow-other", "allow_other":
+			c.AllowOther = true
+		case "uid":
+			if intVal, err := strconv.Atoi(val); err == nil {
+				c.UID = intVal
+			} else {
+				log.Fatalf("Failed to parse uid mount option: '%v'\n", err)
+			}
+		case "gid":
+			if intVal, err := strconv.Atoi(val); err == nil {
+				c.UID = intVal
+			} else {
+				log.Fatalf("Failed to parse gid mount option: '%v'\n", err)
+			}
+		default:
+			log.Fatalf("Unknown mount option: '%v'\n", key)
+		}
+	}
+}
+
+func parseOptions(options string) map[string]string {
+	optionsMap := make(map[string]string)
+
+	var off int
+
+	var inQuotes bool
+
+	for i := 0; i < len(options); i++ {
+		if options[i] == ',' && !inQuotes {
+			parseOption(options[off:i], optionsMap)
+			off = i + 1
+		} else if options[i] == '"' {
+			if !inQuotes {
+				inQuotes = true
+			} else if i > 0 && options[i-1] != '\\' {
+				inQuotes = false
+			}
+		}
+	}
+	parseOption(options[off:], optionsMap)
+
+	return optionsMap
+}
+
+func parseOption(s string, optionsMap map[string]string) {
+	if len(s) == 0 {
+		return
+	}
+
+	if strings.Contains(s, "=") {
+		kv := strings.SplitN(s, "=", 2)
+		optionsMap[kv[0]] = kv[1]
+	} else {
+		optionsMap[s] = ""
+	}
 }
 
 func parseConfig() config {
-	configFilePath := flag.StringP("config", "c", "", "config file path")
-	username := flag.StringP("username", "u", "", "mycloud.com username ")
-	password := flag.StringP("password", "p", "", "mycloud.com password")
-	debug := flag.BoolP("debug", "d", false, "activate debug output")
-	foreground := flag.BoolP("foreground", "f", false, "do not demonize")
-	allowOther := flag.BoolP("allow-other", "a", false, "allow other users")
-	uid := flag.IntP("uid", "U", -1, "set the owner of the files in the filesystem")
-	gid := flag.IntP("gid", "G", -1, "set the group of the files in the filesystem")
-	flag.Parse()
-
-	c := loadConfigFile(*configFilePath)
-
-	if *username != "" {
-		c.Username = *username
-	}
-
-	if *password != "" {
-		c.Password = *password
-	}
-
-	if *debug {
-		c.Debug = true
-	}
-
-	if *foreground {
-		c.Foreground = true
-	}
-
-	if *allowOther {
-		c.AllowOther = true
-	}
-
-	if *uid > 0 {
-		c.UID = *uid
-	}
-
-	if *gid > 0 {
-		c.GID = *gid
-	}
-
-	return c
-}
-
-func loadConfigFile(configFilePath string) config {
 	c := config{
 		UID: -1,
 		GID: -1,
 	}
 
-	if configFilePath != "" {
-		if _, err := os.Stat(configFilePath); err != nil {
-			fmt.Printf("Configuration file %v doesn't exist or is unreadable.\n", configFilePath)
-			os.Exit(1)
-		}
-	} else {
-		if _, err := os.Stat(defaultConfigFilePath); err == nil {
-			configFilePath = defaultConfigFilePath
+	var options string
+
+	// Disable sorting of flags
+	flag.CommandLine.SortFlags = false
+	flag.StringVarP(&c.ConfigFilePath, "config", "c", c.ConfigFilePath, "config file path")
+	flag.StringVarP(&c.Username, "username", "u", c.Username, "mycloud.com username")
+	flag.StringVarP(&c.Password, "password", "p", c.Password, "mycloud.com password")
+	flag.BoolVarP(&c.AllowOther, "allow-other", "a", c.AllowOther, "allow other users")
+	flag.IntVarP(&c.UID, "uid", "U", c.UID, "set the owner of the files in the filesystem")
+	flag.IntVarP(&c.GID, "gid", "G", c.GID, "set the group of the files in the filesystem")
+	flag.BoolVarP(&c.Foreground, "foreground", "f", c.Foreground, "do not demonize")
+	flag.BoolVarP(&c.Debug, "debug", "d", c.Debug, "activate debug output (implies --foreground)")
+	flag.StringVarP(&options, "options", "o", "", "mount options")
+	help := flag.BoolP("help", "h", false, "display this help and exit")
+
+	// The `options` flag is only to support being called by mount.
+	// We hide it in the user help
+	flag.Lookup("options").Hidden = true
+	flag.Lookup("uid").DefValue = "disabled"
+	flag.Lookup("gid").DefValue = "disabled"
+
+	flag.Parse()
+
+	if *help {
+		c.printUsage()
+		os.Exit(0)
+	}
+
+	c.loadMountOptions(options)
+
+	if c.ConfigFilePath == "" {
+		if file, err := os.OpenFile(defaultConfigFilePath, os.O_RDONLY, 0666); err == nil {
+			_ = file.Close()
+			c.ConfigFilePath = defaultConfigFilePath
 		}
 	}
 
-	if configFilePath != "" {
-		if _, err := toml.DecodeFile(configFilePath, &c); err != nil {
-			fmt.Printf("Error: %v\n", err)
-			os.Exit(1)
-		}
-	}
+	c.loadConfigFile()
+	flag.Parse()
+	c.validateConfig()
 
 	return c
 }
 
-func validateConfig(c config) config {
+func (c *config) loadConfigFile() {
+	if c.ConfigFilePath == "" {
+		return
+	}
+
+	if _, err := os.Stat(c.ConfigFilePath); err != nil {
+		log.Fatalf("Configuration file %v doesn't exist or is unreadable.\n", c.ConfigFilePath)
+	}
+
+	if _, err := toml.DecodeFile(c.ConfigFilePath, c); err != nil {
+		log.Fatalf("Error: %v\n", err)
+	}
+}
+
+func (c *config) validateConfig() {
 	if c.Username == "" {
-		fmt.Printf("Username is required. Set it in configuration file or specify it with --username flag.\n")
-		os.Exit(1)
+		log.Fatalf("Username is required. Set it in configuration file or specify it with --username flag.\n")
 	}
 
 	if c.Password == "" {
-		fmt.Printf("Password is required. Set it in configuration file or specify it with --password flag.\n")
-		os.Exit(1)
+		log.Fatalf("Password is required. Set it in configuration file or specify it with --password flag.\n")
 	}
 
 	if c.UID < 0 {
@@ -145,19 +211,23 @@ func validateConfig(c config) config {
 		c.GID = syscall.Getgid()
 	}
 
-	return c
+	// Debugging implies running in foreground
+	c.Foreground = c.Foreground || c.Debug
+}
+
+func (c *config) printUsage() {
+	_, _ = fmt.Fprintf(os.Stderr, "Usage: %v [flags] deviceName[:devicePath] mountpoint\n", path.Base(os.Args[0]))
+
+	flag.PrintDefaults()
 }
 
 func main() {
 	config := parseConfig()
 
 	if len(flag.Args()) <= mountPointPos {
-		fmt.Printf("Usage: %v [flags] deviceName[:devicePath] mountpoint\n", path.Base(os.Args[0]))
-		flag.PrintDefaults()
+		config.printUsage()
 		os.Exit(1)
 	}
-
-	config = validateConfig(config)
 
 	source := flag.Arg(sourcePos)
 	mountPoint := flag.Arg(mountPointPos)

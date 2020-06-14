@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - Send the process in the background automatically
+- Support mounting using `mount -t fuse.mchfuse` and `/etc/fstab`
 
 ## [0.1.0] - 2020-06-04
 

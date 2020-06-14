@@ -94,14 +94,15 @@ umount MOUNT_POINT
 
 ``` plain
 Usage: mchfuse [flags] deviceName[:devicePath] mountpoint
-  -a, --allow-other       allow other users
   -c, --config string     config file path
-  -d, --debug             activate debug output
-  -f, --foreground        do not demonize
-  -G, --gid int           set the group of the files in the filesystem (default -1)
-  -p, --password string   mycloud.com password
-  -U, --uid int           set the owner of the files in the filesystem (default -1)
   -u, --username string   mycloud.com username
+  -p, --password string   mycloud.com password
+  -a, --allow-other       allow other users
+  -U, --uid int           set the owner of the files in the filesystem (default disabled)
+  -G, --gid int           set the group of the files in the filesystem (default disabled)
+  -f, --foreground        do not demonize
+  -d, --debug             activate debug output (implies --foreground)
+  -h, --help              display this help and exit
 ```
 
 All the options can be specified in a configuration file with the format:
@@ -111,7 +112,7 @@ flag-name = value
 ```
 
 You can pass the configuration using the `--config` flag, otherwise `mchfuse`
-loads the options from `/etc/mchfuse.conf` if it exists.
+loads the options from `/etc/mchfuse.conf` if it exists and is readable.
 
 If you do not specify a UID or a GID, it inherits the missing setting from the
 user that runs the command.
@@ -130,6 +131,35 @@ If the path doesn't exist, MCHFuse tries to create it.
 > **NOTE:** `mchfuse` demonize itself, eventual errors raised by the background
 > process will end up in the syslog with priority NOTICE and tag "mchfuse".
 
+## Persistent Mounts
+
+To keep your volume mounted on your system through reboots, create
+a persistent mount. This is accomplished by updating
+your system's `/etc/fstab` [file](https://wiki.archlinux.org/index.php/fstab).
+
+### Update `fstab`
+
+On a new line, add a mount directive to your `/etc/fstab` file which matches
+the following syntax:
+
+```
+deviceName[:devicePath] mountpoint fuse.mchfuse noauto,x-systemd.automount,_netdev,allow_other 0 0
+```
+
+You can specify any option available on the command line adding it in the field 
+containing `noauto,x-systemd.automount,_netdev,allow_other` separated by commas.
+Please avoid using explicit `username` and `password` parameters, because
+they will be readable both in `/etc/fstab` file and in the system process list.
+Use the default configuration file `/etc/mchfuse.conf` or specify one 
+using `config` option instead.
+
+> **NOTE** You will need to use sudo privileges to edit this file from your
+> limited user.
+
+After setting the line in `/etc/fstab`, reboot your system.
+Then, list the contents of the mounted directory. You should see the content
+of your device.
+
 ## Maturity
 
 This project is in alpha state. I've made it to access my device from Linux,
@@ -142,7 +172,6 @@ from performances.
 
 ## TODO
 
-* Mount helper, to support mounting from `/etc/fstab`
 * Performance tests
 * Device list command
 * Support for extended attributes
