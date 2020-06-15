@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2020-06-15
+
 - Send the process in the background automatically
 - Support mounting using `mount -t fuse.mchfuse` and `/etc/fstab`
 
@@ -29,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/mnencia/mchfuse/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/mnencia/mchfuse/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/mnencia/mchfuse/releases/tag/v0.2.0
 [0.1.0]: https://github.com/mnencia/mchfuse/releases/tag/v0.1.0
 [0.0.1]: https://github.com/mnencia/mchfuse/releases/tag/v0.0.1
