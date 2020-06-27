@@ -35,10 +35,22 @@ type MCHNode struct {
 	file *mch.File
 }
 
-var ErrorInvalidFilesystemStatus = errors.New("invalid filesytem status")
-
-// MCHNode must be InodeEmbedders.
 var _ = (fs.InodeEmbedder)((*MCHNode)(nil))
+var _ = (fs.NodeReaddirer)((*MCHNode)(nil))
+var _ = (fs.NodeLookuper)((*MCHNode)(nil))
+var _ = (fs.NodeGetattrer)((*MCHNode)(nil))
+var _ = (fs.NodeGetxattrer)((*MCHNode)(nil))
+var _ = (fs.NodeSetxattrer)((*MCHNode)(nil))
+var _ = (fs.NodeOpener)((*MCHNode)(nil))
+var _ = (fs.NodeUnlinker)((*MCHNode)(nil))
+var _ = (fs.NodeRmdirer)((*MCHNode)(nil))
+var _ = (fs.NodeRenamer)((*MCHNode)(nil))
+var _ = (fs.NodeMkdirer)((*MCHNode)(nil))
+var _ = (fs.NodeCreater)((*MCHNode)(nil))
+var _ = (fs.NodeSetattrer)((*MCHNode)(nil))
+var _ = (fs.NodeMknoder)((*MCHNode)(nil))
+
+var ErrorInvalidFilesystemStatus = errors.New("invalid filesytem status")
 
 func NewMCHNode(file *mch.File) *MCHNode {
 	return &MCHNode{file: file}
@@ -51,9 +63,6 @@ func (mn *MCHNode) mode() uint32 {
 
 	return fuse.S_IFREG
 }
-
-// MCHNode must implement Readdir.
-var _ = (fs.NodeReaddirer)((*MCHNode)(nil))
 
 func (mn *MCHNode) Readdir(ctx context.Context) (fs.DirStream, syscall.Errno) {
 	if err := mn.fetch(ctx); err != nil {
@@ -95,8 +104,6 @@ func (mn *MCHNode) fetch(ctx context.Context) error {
 
 	return nil
 }
-
-var _ = (fs.NodeLookuper)((*MCHNode)(nil))
 
 func (mn *MCHNode) Lookup(ctx context.Context, name string, out *fuse.EntryOut) (*fs.Inode, syscall.Errno) {
 	child := mn.GetChild(name)
@@ -170,9 +177,6 @@ func (mn *MCHNode) updateChild(ctx context.Context, name string, info *mch.File)
 	return nil
 }
 
-// MCHNode must implement Getattr.
-var _ = (fs.NodeGetattrer)((*MCHNode)(nil))
-
 func (mn *MCHNode) Getattr(ctx context.Context, file fs.FileHandle, out *fuse.AttrOut) syscall.Errno {
 	if err := mn.file.Refresh(); err != nil {
 		return syscall.EIO
@@ -196,47 +200,17 @@ func (mn *MCHNode) getattr(out *fuse.Attr) {
 	out.SetTimes(&mtime, &mtime, &ctime)
 }
 
-var _ = (fs.NodeGetxattrer)((*MCHNode)(nil))
-
 func (mn *MCHNode) Getxattr(ctx context.Context, attr string, dest []byte) (uint32, syscall.Errno) {
 	return 0, syscall.ENOSYS
 }
-
-var _ = (fs.NodeSetxattrer)((*MCHNode)(nil))
 
 func (mn *MCHNode) Setxattr(ctx context.Context, attr string, dest []byte, flags uint32) syscall.Errno {
 	return syscall.ENOSYS
 }
 
-var _ = (fs.NodeOpener)((*MCHNode)(nil))
-
 func (mn *MCHNode) Open(ctx context.Context, flags uint32) (file fs.FileHandle, fuseFlags uint32, code syscall.Errno) {
-	return mn, 0, fs.OK
+	return MCHFileHandle{node: mn}, 0, fs.OK
 }
-
-var _ = (fs.NodeReader)((*MCHNode)(nil))
-
-func (mn *MCHNode) Read(ctx context.Context, f fs.FileHandle, dest []byte, off int64) (fuse.ReadResult, syscall.Errno) {
-	size := int64(mn.file.Size)
-	if off > size {
-		// ENXIO = no such address.
-		return nil, syscall.Errno(int(syscall.ENXIO))
-	}
-
-	end := off + int64(len(dest))
-	if end > size {
-		dest = dest[:size-off]
-	}
-
-	read, err := mn.file.Read(dest, off)
-	if err != nil {
-		return nil, syscall.EIO
-	}
-
-	return fuse.ReadResultData(dest[:read]), fs.OK
-}
-
-var _ = (fs.NodeUnlinker)((*MCHNode)(nil))
 
 func (mn *MCHNode) Unlink(ctx context.Context, name string) syscall.Errno {
 	if err := mn.lookup(ctx, name); err != nil {
@@ -257,8 +231,6 @@ func (mn *MCHNode) Unlink(ctx context.Context, name string) syscall.Errno {
 
 	return 0
 }
-
-var _ = (fs.NodeRmdirer)((*MCHNode)(nil))
 
 func (mn *MCHNode) Rmdir(ctx context.Context, name string) syscall.Errno {
 	if err := mn.lookup(ctx, name); err != nil {
@@ -284,8 +256,6 @@ func (mn *MCHNode) Rmdir(ctx context.Context, name string) syscall.Errno {
 
 	return 0
 }
-
-var _ = (fs.NodeRenamer)((*MCHNode)(nil))
 
 func (mn *MCHNode) Rename(
 	ctx context.Context,
@@ -333,8 +303,6 @@ func (mn *MCHNode) Rename(
 	return 0
 }
 
-var _ = (fs.NodeMkdirer)((*MCHNode)(nil))
-
 func (mn *MCHNode) Mkdir(
 	ctx context.Context,
 	name string,
@@ -378,8 +346,6 @@ func (mn *MCHNode) Mkdir(
 	return newInode, fs.OK
 }
 
-var _ = (fs.NodeCreater)((*MCHNode)(nil))
-
 func (mn *MCHNode) Create(
 	ctx context.Context,
 	name string,
@@ -420,28 +386,8 @@ func (mn *MCHNode) Create(
 
 	out.Attr = attr.Attr
 
-	return newInode, newNode, 0, fs.OK
+	return newInode, MCHFileHandle{node: newNode}, 0, fs.OK
 }
-
-var _ = (fs.NodeWriter)((*MCHNode)(nil))
-
-func (mn *MCHNode) Write(
-	ctx context.Context,
-	f fs.FileHandle,
-	data []byte,
-	off int64,
-) (
-	written uint32,
-	errno syscall.Errno,
-) {
-	if err := mn.file.Write(data, off); err != nil {
-		return 0, syscall.EIO
-	}
-
-	return uint32(len(data)), fs.OK
-}
-
-var _ = (fs.NodeSetattrer)((*MCHNode)(nil))
 
 func (mn *MCHNode) Setattr(ctx context.Context, f fs.FileHandle, in *fuse.SetAttrIn, out *fuse.AttrOut) syscall.Errno {
 	if size, ok := in.GetSize(); ok {
@@ -468,8 +414,6 @@ func (mn *MCHNode) Setattr(ctx context.Context, f fs.FileHandle, in *fuse.SetAtt
 
 	return mn.Getattr(ctx, f, out)
 }
-
-var _ = (fs.NodeMknoder)((*MCHNode)(nil))
 
 func (*MCHNode) Mknod(
 	ctx context.Context,
