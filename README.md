@@ -59,8 +59,8 @@ You can mount your device using the following command:
 
 ``` sh
 cat > mchfuse.conf << 'EOF'
-username = EMAIL
-password = PASSWORD
+username = "EMAIL"
+password = "PASSWORD"
 EOF
 
 chmod 600 mchfuse.conf
@@ -71,8 +71,12 @@ mchfuse -c mchfuse.conf DEVICE_NAME MOUNT_POINT
 The `EMAIL` and `PASSWORD` are the ones used to access <https://home.mycloud.com/>.
 
 The `DEVICE_NAME` is the name assigned to the device during the initial configuration.
-If you happen to use a wrong name, the resulting error message contain the list
+If you happen to use a wrong name, the resulting error message contains the list
 of valid discovered device names.
+
+Footnote: semi-automatic device names contain a single quote. To enter
+such a string on a commandline you need to enclose it in double quotes.
+(No amount of escaping inside single quotes seems to work these days).
 
 Replace `MOUNT_POINT` with the actual path where you want to see the content
 of the device. (e.g. `/mnt/mydevice`)
