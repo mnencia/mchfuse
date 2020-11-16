@@ -54,13 +54,14 @@ func Login(username string, password string) (*Client, error) {
 	client := Client{Configuration: config, OSType: osType()}
 
 	req := map[string]string{
-		"grant_type": "http://auth0.com/oauth/grant-type/password-realm",
-		"realm":      "Username-Password-Authentication",
-		"audience":   "mycloud.com",
-		"username":   username,
-		"password":   password,
-		"scope":      "openid offline_access nas_read_write nas_read_only user_read device_read",
-		"client_id":  config.GetString("com.wd.portal", "portal.auth0.client"),
+		"grant_type":    "http://auth0.com/oauth/grant-type/password-realm",
+		"realm":         "Username-Password-Authentication",
+		"audience":      "mycloud.com",
+		"username":      username,
+		"password":      password,
+		"scope":         "openid offline_access nas_read_write nas_read_only user_read device_read",
+		"client_id":     "9B0Gi617tROKHc2rS95sT1yJzR6MkQDm",
+		"client_secret": "oSJOB1KOWnLVZm11DVknu2wZkTj5AGKxcINEDtEUPE30jHKvEqorM8ocWbyo17Hd",
 	}
 
 	data, err := json.Marshal(req)
