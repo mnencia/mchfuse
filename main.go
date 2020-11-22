@@ -276,7 +276,7 @@ func main() {
 		}
 
 		// Logging output must go to syslog as stderr is not available in a daemon process
-		setSyslogLogger()
+		redirectOutputToSyslog()
 	}
 
 	if err := mount(file, source, mountPoint, config); err != nil {
@@ -284,11 +284,16 @@ func main() {
 	}
 }
 
-func setSyslogLogger() {
+func redirectOutputToSyslog() {
 	syslogWriter, e := syslog.New(syslog.LOG_NOTICE, "mchfuse")
 	if e == nil {
 		log.SetOutput(syslogWriter)
 	}
+
+	// Redirect standard file descriptors to `/dev/null`
+	os.Stdin = os.NewFile(uintptr(syscall.Stdin), os.DevNull)
+	os.Stdout = os.NewFile(uintptr(syscall.Stdout), os.DevNull)
+	os.Stderr = os.NewFile(uintptr(syscall.Stderr), os.DevNull)
 }
 
 func demonize() (int, error) {
