@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2020-11-22
+
+- Bump github.com/relvacode/iso8601 from 1.0.0 to 1.1.0
+- Fix login error ([GH-17](https://github.com/mnencia/mchfuse/issues/17))
+- Close file descriptors when going background (tentative fix for [GH-15](https://github.com/mnencia/mchfuse/issues/17))
+
 ## [0.2.0] - 2020-06-15
 
 - Send the process in the background automatically
@@ -14,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.0] - 2020-06-04
 
-- Reuse http.Client to improve performances. ([#1](https://github.com/mnencia/mchfuse/issues/1))
+- Reuse http.Client to improve performances. ([GH-1](https://github.com/mnencia/mchfuse/issues/1))
 - Detect whether the device is reachable locally
 
   When connecting to a device, mchfuse try to determine if it is locally
@@ -31,7 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/mnencia/mchfuse/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/mnencia/mchfuse/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/mnencia/mchfuse/releases/tag/v0.3.0
 [0.2.0]: https://github.com/mnencia/mchfuse/releases/tag/v0.2.0
 [0.1.0]: https://github.com/mnencia/mchfuse/releases/tag/v0.1.0
 [0.0.1]: https://github.com/mnencia/mchfuse/releases/tag/v0.0.1
