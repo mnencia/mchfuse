@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"log"
 	"log/syslog"
+	"math"
 	"os"
 	"os/exec"
 	"path"
@@ -77,12 +78,20 @@ func (c *config) loadMountOptions(options string) {
 			c.AllowOther = true
 		case "uid":
 			if intVal, err := strconv.Atoi(val); err == nil {
+				if intVal > math.MaxUint32 {
+					log.Fatalf("UID too big (Max allowed uid is %v): %v\n", math.MaxUint32, intVal)
+				}
+
 				c.UID = intVal
 			} else {
 				log.Fatalf("Failed to parse uid mount option: '%v'\n", err)
 			}
 		case "gid":
 			if intVal, err := strconv.Atoi(val); err == nil {
+				if intVal > math.MaxUint32 {
+					log.Fatalf("GID too big (Max allowed gid is %v): %v\n", math.MaxUint32, intVal)
+				}
+
 				c.UID = intVal
 			} else {
 				log.Fatalf("Failed to parse gid mount option: '%v'\n", err)
