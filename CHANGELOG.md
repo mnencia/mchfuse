@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Fix "operation not supported" error on write ([GH-18](https://github.com/mnencia/mchfuse/issues/18)
+  and [GH-19](https://github.com/mnencia/mchfuse/issues/19))
+
 ## [0.3.0] - 2020-11-22
 
 - Bump github.com/relvacode/iso8601 from 1.0.0 to 1.1.0

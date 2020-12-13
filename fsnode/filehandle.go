@@ -52,14 +52,7 @@ func (mf *MCHFileHandle) Read(ctx context.Context, dest []byte, off int64) (fuse
 	return fuse.ReadResultData(dest[:read]), fs.OK
 }
 
-func (mf *MCHFileHandle) Write(
-	ctx context.Context,
-	data []byte,
-	off int64,
-) (
-	written uint32,
-	errno syscall.Errno,
-) {
+func (mf *MCHFileHandle) Write(ctx context.Context, data []byte, off int64) (written uint32, errno syscall.Errno) {
 	if err := mf.node.file.Write(data, off); err != nil {
 		return 0, syscall.EIO
 	}

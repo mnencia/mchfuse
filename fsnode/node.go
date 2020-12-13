@@ -209,7 +209,7 @@ func (mn *MCHNode) Setxattr(ctx context.Context, attr string, dest []byte, flags
 }
 
 func (mn *MCHNode) Open(ctx context.Context, flags uint32) (file fs.FileHandle, fuseFlags uint32, code syscall.Errno) {
-	return MCHFileHandle{node: mn}, 0, fs.OK
+	return &MCHFileHandle{node: mn}, 0, fs.OK
 }
 
 func (mn *MCHNode) Unlink(ctx context.Context, name string) syscall.Errno {
@@ -386,7 +386,7 @@ func (mn *MCHNode) Create(
 
 	out.Attr = attr.Attr
 
-	return newInode, MCHFileHandle{node: newNode}, 0, fs.OK
+	return newInode, &MCHFileHandle{node: newNode}, 0, fs.OK
 }
 
 func (mn *MCHNode) Setattr(ctx context.Context, f fs.FileHandle, in *fuse.SetAttrIn, out *fuse.AttrOut) syscall.Errno {
