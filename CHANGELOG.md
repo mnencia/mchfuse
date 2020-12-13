@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2020-12-13
+
 - Fix "operation not supported" error on write ([GH-18](https://github.com/mnencia/mchfuse/issues/18)
   and [GH-19](https://github.com/mnencia/mchfuse/issues/19))
 
@@ -40,7 +42,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/mnencia/mchfuse/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/mnencia/mchfuse/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/mnencia/mchfuse/releases/tag/v0.3.1
 [0.3.0]: https://github.com/mnencia/mchfuse/releases/tag/v0.3.0
 [0.2.0]: https://github.com/mnencia/mchfuse/releases/tag/v0.2.0
 [0.1.0]: https://github.com/mnencia/mchfuse/releases/tag/v0.1.0
