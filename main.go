@@ -54,8 +54,8 @@ type config struct {
 	Debug          bool   `toml:"debug"`
 	Foreground     bool   `toml:"foreground"`
 	AllowOther     bool   `toml:"allow-other"`
-	UID            int    `toml:"uid"`
-	GID            int    `toml:"gid"`
+	UID            int64  `toml:"uid"`
+	GID            int64  `toml:"gid"`
 }
 
 func (c *config) loadMountOptions(options string) {
@@ -77,9 +77,9 @@ func (c *config) loadMountOptions(options string) {
 		case "allow-other", "allow_other":
 			c.AllowOther = true
 		case "uid":
-			if intVal, err := strconv.Atoi(val); err == nil {
+			if intVal, err := strconv.ParseInt(val, 10, 64); err == nil {
 				if intVal > math.MaxUint32 {
-					log.Fatalf("UID too big (Max allowed uid is %v): %v\n", math.MaxUint32, intVal)
+					log.Fatalf("UID too big (Max allowed uid is %v): %v\n", int64(math.MaxUint32), intVal)
 				}
 
 				c.UID = intVal
@@ -87,9 +87,9 @@ func (c *config) loadMountOptions(options string) {
 				log.Fatalf("Failed to parse uid mount option: '%v'\n", err)
 			}
 		case "gid":
-			if intVal, err := strconv.Atoi(val); err == nil {
+			if intVal, err := strconv.ParseInt(val, 10, 64); err == nil {
 				if intVal > math.MaxUint32 {
-					log.Fatalf("GID too big (Max allowed gid is %v): %v\n", math.MaxUint32, intVal)
+					log.Fatalf("GID too big (Max allowed gid is %v): %v\n", int64(math.MaxUint32), intVal)
 				}
 
 				c.UID = intVal
@@ -153,8 +153,8 @@ func parseConfig() config {
 	flag.StringVarP(&c.Username, "username", "u", c.Username, "mycloud.com username")
 	flag.StringVarP(&c.Password, "password", "p", c.Password, "mycloud.com password")
 	flag.BoolVarP(&c.AllowOther, "allow-other", "a", c.AllowOther, "allow other users")
-	flag.IntVarP(&c.UID, "uid", "U", c.UID, "set the owner of the files in the filesystem")
-	flag.IntVarP(&c.GID, "gid", "G", c.GID, "set the group of the files in the filesystem")
+	flag.Int64VarP(&c.UID, "uid", "U", c.UID, "set the owner of the files in the filesystem")
+	flag.Int64VarP(&c.GID, "gid", "G", c.GID, "set the group of the files in the filesystem")
 	flag.BoolVarP(&c.Foreground, "foreground", "f", c.Foreground, "do not demonize")
 	flag.BoolVarP(&c.Debug, "debug", "d", c.Debug, "activate debug output (implies --foreground)")
 	flag.StringVarP(&options, "options", "o", "", "mount options")
@@ -213,11 +213,11 @@ func (c *config) validateConfig() {
 	}
 
 	if c.UID < 0 {
-		c.UID = syscall.Getuid()
+		c.UID = int64(syscall.Getuid())
 	}
 
 	if c.GID < 0 {
-		c.GID = syscall.Getgid()
+		c.GID = int64(syscall.Getgid())
 	}
 
 	// Debugging implies running in foreground
