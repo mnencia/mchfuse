@@ -341,6 +341,7 @@ func mount(file *mch.File, source, mountPoint string, config config) error {
 			Debug:      config.Debug,
 			FsName:     source,
 			Name:       "mchfuse",
+			MaxWrite:   fuse.MAX_KERNEL_WRITE,
 		},
 		UID:          uint32(config.UID),
 		GID:          uint32(config.GID),
