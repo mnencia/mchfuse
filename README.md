@@ -21,7 +21,7 @@ brew cask install osxfuse
 To quickly install the latest pre-built binary of MCHFuse, you can execute the following command:
 
 ``` sh
-curl -sSfL https://github.com/mnencia/mchfuse/raw/master/install.sh | sudo sh -s -- -b /usr/local/bin
+curl -sSfL https://github.com/mnencia/mchfuse/raw/main/install.sh | sudo sh -s -- -b /usr/local/bin
 ```
 
 ## Installing from source
