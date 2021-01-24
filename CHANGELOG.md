@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Switch to godaemon to demonize [GH-15](https://github.com/mnencia/mchfuse/issues/17)
+
 ## [0.3.1] - 2020-12-13
 
 - Fix "operation not supported" error on write ([GH-18](https://github.com/mnencia/mchfuse/issues/18)

@@ -22,7 +22,6 @@ import (
 	"log/syslog"
 	"math"
 	"os"
-	"os/exec"
 	"path"
 	"strconv"
 	"strings"
@@ -30,6 +29,7 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
+	"github.com/VividCortex/godaemon"
 	"github.com/hanwen/go-fuse/v2/fs"
 	"github.com/hanwen/go-fuse/v2/fuse"
 	flag "github.com/spf13/pflag"
@@ -276,12 +276,8 @@ func main() {
 	}
 
 	if !config.Foreground {
-		if os.Getppid() > 1 {
-			if _, err := demonize(); err != nil {
-				log.Fatalf("Error demonising: %s", err)
-			}
-
-			os.Exit(0)
+		if _, _, err := godaemon.MakeDaemon(&godaemon.DaemonAttr{}); err != nil {
+			log.Fatalf("Error demonising: %s", err)
 		}
 
 		// Logging output must go to syslog as stderr is not available in a daemon process
@@ -305,32 +301,6 @@ func redirectOutputToSyslog() {
 	os.Stderr = os.NewFile(uintptr(syscall.Stderr), os.DevNull)
 }
 
-func demonize() (int, error) {
-	executable, err := os.Executable()
-	if err != nil {
-		return 0, err
-	}
-
-	args := os.Args[1:]
-	cmd := exec.Command(executable, args...)
-	cmd.Env = os.Environ()
-	cmd.SysProcAttr = &syscall.SysProcAttr{
-		// Setsid is used to detach the process from the parent (normally a shell)
-		//
-		// The disowning of a child process is accomplished by executing the system call
-		// setpgrp() or setsid(), (both of which have the same functionality) as soon as
-		// the child is forked. These calls create a new process session group, make the
-		// child process the session leader, and set the process group ID to the process
-		// ID of the child. https://bsdmag.org/unix-kernel-system-calls/
-		Setsid: true,
-	}
-
-	if err := cmd.Start(); err != nil {
-		return 0, err
-	}
-
-	return cmd.Process.Pid, nil
-}
 
 func mount(file *mch.File, source, mountPoint string, config config) error {
 	mchRoot := fsnode.NewMCHNode(file)
