@@ -47,14 +47,14 @@ const (
 	mountPointPos
 )
 
-// Version values are assigned during build
+// Version values are assigned during build.
 var (
 	version      = "Unknown"
-	revision     = "Unknown"
-	revisionDate = "Unknown"
+	revision     = "Unknown" // nolint:gochecknoglobals
+	revisionDate = "Unknown" // nolint:gochecknoglobals
 )
 
-// Version prints human-readable version string
+// Version prints human-readable version string.
 func Version() string {
 	return fmt.Sprintf("%v (%v, %v)", version, revisionDate, revision)
 }
@@ -324,7 +324,6 @@ func redirectOutputToSyslog() {
 	os.Stdout = os.NewFile(uintptr(syscall.Stdout), os.DevNull)
 	os.Stderr = os.NewFile(uintptr(syscall.Stderr), os.DevNull)
 }
-
 
 func mount(file *mch.File, source, mountPoint string, config config) error {
 	mchRoot := fsnode.NewMCHNode(file)
