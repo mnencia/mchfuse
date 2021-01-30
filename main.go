@@ -47,6 +47,18 @@ const (
 	mountPointPos
 )
 
+// Version values are assigned during build
+var (
+	version      = "Unknown"
+	revision     = "Unknown"
+	revisionDate = "Unknown"
+)
+
+// Version prints human-readable version string
+func Version() string {
+	return fmt.Sprintf("%v (%v, %v)", version, revisionDate, revision)
+}
+
 type config struct {
 	ConfigFilePath string `toml:"-"`
 	Username       string `toml:"username"`
@@ -283,6 +295,8 @@ func main() {
 		// Logging output must go to syslog as stderr is not available in a daemon process
 		redirectOutputToSyslog()
 	}
+
+	_, _ = fmt.Fprintf(os.Stderr, "Starting MCHFuse version %v", Version())
 
 	if err := mount(file, source, mountPoint, config); err != nil {
 		log.Fatal(err)

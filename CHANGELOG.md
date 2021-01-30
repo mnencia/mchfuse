@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - Switch to godaemon to demonize [GH-15](https://github.com/mnencia/mchfuse/issues/17)
+- Store the version information inside the executable.
+  The build version is printed in the log during the startup.
 
 ## [0.3.1] - 2020-12-13
 

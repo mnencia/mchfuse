@@ -16,13 +16,18 @@ ifeq ($(PREFIX),)
     PREFIX := /usr/local
 endif
 
+REVISION := $(shell git rev-parse --short HEAD || unknown)
+REVISION_DATE := $(shell git log -1 --pretty=format:'%ad' --date short)
+VERSION := $(shell git describe --tags --match 'v*' | sed -e 's/^v//; s/-g[0-9a-f]\+$$//; s/-\([0-9]\+\)$$/+dev\1/')
+LDFLAGS = -s -w -X main.revision=$(REVISION) -X main.revisionDate=$(REVISION_DATE) -X main.version=$(VERSION)
+
 .PHONY: all
 all: mchfuse
 
 mchfuse: main.go $(wildcard mch/*.go) $(wildcard fsnode/*.go)
 	go fmt ./...
 	go vet ./...
-	go build -o mchfuse main.go
+	go build -ldflags="$(LDFLAGS)" -o mchfuse main.go
 
 .PHONY: test
 test:
