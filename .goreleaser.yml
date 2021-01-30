@@ -12,6 +12,7 @@ before:
 
 builds:
 - binary: mchfuse
+  ldflags: -s -w -X main.revision={{.ShortCommit}} -X main.revisionDate={{.CommitDate}} -X main.version={{.Version}}
   goos:
   - darwin
   - linux
