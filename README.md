@@ -107,6 +107,7 @@ Usage: mchfuse [flags] deviceName[:devicePath] mountpoint
   -f, --foreground        do not demonize
   -d, --debug             activate debug output (implies --foreground)
   -h, --help              display this help and exit
+  -v, --version           display the version and exit
 ```
 
 All the options can be specified in a configuration file with the format:

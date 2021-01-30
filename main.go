@@ -171,6 +171,7 @@ func parseConfig() config {
 	flag.BoolVarP(&c.Debug, "debug", "d", c.Debug, "activate debug output (implies --foreground)")
 	flag.StringVarP(&options, "options", "o", "", "mount options")
 	help := flag.BoolP("help", "h", false, "display this help and exit")
+	version := flag.BoolP("version", "v", false, "display the version and exit")
 
 	// The `options` flag is only to support being called by mount.
 	// We hide it in the user help
@@ -182,6 +183,11 @@ func parseConfig() config {
 
 	if *help {
 		c.printUsage()
+		os.Exit(0)
+	}
+
+	if *version {
+		c.printVersion()
 		os.Exit(0)
 	}
 
@@ -240,6 +246,10 @@ func (c *config) printUsage() {
 	_, _ = fmt.Fprintf(os.Stderr, "Usage: %v [flags] deviceName[:devicePath] mountpoint\n", path.Base(os.Args[0]))
 
 	flag.PrintDefaults()
+}
+
+func (c *config) printVersion() {
+	_, _ = fmt.Fprintf(os.Stderr, "MCHFuse version %v\n", Version())
 }
 
 func main() {
