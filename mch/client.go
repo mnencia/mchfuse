@@ -44,7 +44,7 @@ type Client struct {
 }
 
 const (
-	clientId     = "9B0Gi617tROKHc2rS95sT1yJzR6MkQDm"
+	clientID     = "9B0Gi617tROKHc2rS95sT1yJzR6MkQDm"
 	clientSecret = "oSJOB1KOWnLVZm11DVknu2wZkTj5AGKxcINEDtEUPE30jHKvEqorM8ocWbyo17Hd" // nolint:gosec
 )
 
