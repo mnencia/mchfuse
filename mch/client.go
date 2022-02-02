@@ -45,7 +45,7 @@ type Client struct {
 
 const (
 	clientId     = "9B0Gi617tROKHc2rS95sT1yJzR6MkQDm"
-	clientSecret = "oSJOB1KOWnLVZm11DVknu2wZkTj5AGKxcINEDtEUPE30jHKvEqorM8ocWbyo17Hd"
+	clientSecret = "oSJOB1KOWnLVZm11DVknu2wZkTj5AGKxcINEDtEUPE30jHKvEqorM8ocWbyo17Hd" // nolint:gosec
 )
 
 var ErrorUnexpectedStatusCode = errors.New("unexpected status code")
@@ -65,7 +65,7 @@ func Login(username string, password string) (*Client, error) {
 		"username":      username,
 		"password":      password,
 		"scope":         "openid offline_access nas_read_write nas_read_only user_read device_read",
-		"client_id":     clientId,
+		"client_id":     clientID,
 		"client_secret": clientSecret,
 	}
 
@@ -110,7 +110,7 @@ func osType() string {
 func (c *Client) refreshAccessToken() error {
 	req := map[string]string{
 		"audience":      "mycloud.com",
-		"client_id":     clientId,
+		"client_id":     clientID,
 		"client_secret": clientSecret,
 		"grant_type":    "refresh_token",
 		"refresh_token": c.RefreshToken,
