@@ -7,9 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2022-02-20
+
+- Enable dependabot
+- Fix refresh access token request body [GH-44](https://github.com/mnencia/mchfuse/issues/44)
+
 ## [0.3.2] - 2021-01-30
 
-- Switch to godaemon to demonize [GH-15](https://github.com/mnencia/mchfuse/issues/17)
+- Switch to godaemon to demonize [GH-15](https://github.com/mnencia/mchfuse/issues/15)
 - Store the version information inside the executable.
   The build version is printed in the log during the startup.
 - Add -v/--version command line switches
@@ -49,7 +54,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/mnencia/mchfuse/compare/v0.3.2...HEAD
+[Unreleased]: https://github.com/mnencia/mchfuse/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/mnencia/mchfuse/releases/tag/v0.4.0
 [0.3.2]: https://github.com/mnencia/mchfuse/releases/tag/v0.3.2
 [0.3.1]: https://github.com/mnencia/mchfuse/releases/tag/v0.3.1
 [0.3.0]: https://github.com/mnencia/mchfuse/releases/tag/v0.3.0
