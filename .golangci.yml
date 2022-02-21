@@ -13,45 +13,54 @@ linters:
     - depguard
     - dogsled
     - dupl
+    - durationcheck
     - errcheck
+    - exportloopref
     - funlen
     - gochecknoglobals
     - gochecknoinits
+    - exportloopref
     - gocognit
     - goconst
     - gocritic
     - gocyclo
+    - godot
     - godox
     - goerr113
     - gofmt
+    - gofumpt
+    - goheader
     - goimports
-    - golint
-    - gomnd
+    - gomoddirectives
+    - gomodguard
     - goprintffuncname
     - gosec
     - gosimple
     - govet
+    - importas
     - ineffassign
-    - interfacer
     - lll
-    - maligned
+    - makezero
     - misspell
     - nakedret
+    - nestif
     - nolintlint
     - prealloc
+    - predeclared
+    - revive
     - rowserrcheck
-    - scopelint
+    - sqlclosecheck
     - staticcheck
     - structcheck
     - stylecheck
+    - testpackage
+    - thelper
+    - tparallel
     - typecheck
     - unconvert
     - unparam
     - unused
     - varcheck
+    - wastedassign
     - whitespace
     - wsl
-    - godot
-    - gomodguard
-    - nestif
-    - testpackage

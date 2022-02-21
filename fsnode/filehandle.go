@@ -29,8 +29,10 @@ type MCHFileHandle struct {
 	node *MCHNode
 }
 
-var _ = (fs.FileWriter)((*MCHFileHandle)(nil))
-var _ = (fs.FileReader)((*MCHFileHandle)(nil))
+var (
+	_ = (fs.FileWriter)((*MCHFileHandle)(nil))
+	_ = (fs.FileReader)((*MCHFileHandle)(nil))
+)
 
 func (mf *MCHFileHandle) Read(ctx context.Context, dest []byte, off int64) (fuse.ReadResult, syscall.Errno) {
 	size := int64(mf.node.file.Size)

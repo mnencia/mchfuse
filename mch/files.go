@@ -27,8 +27,10 @@ import (
 	"strconv"
 )
 
-const DirectoryMimeType = "application/x.wd.dir"
-const FileFields = "id,eTag,parentID,childCount,mimeType,name,size,mTime,cTime"
+const (
+	DirectoryMimeType = "application/x.wd.dir"
+	FileFields        = "id,eTag,parentID,childCount,mimeType,name,size,mTime,cTime"
+)
 
 var ErrorInvalidOperation = errors.New("invalid operation")
 

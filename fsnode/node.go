@@ -35,20 +35,22 @@ type MCHNode struct {
 	file *mch.File
 }
 
-var _ = (fs.InodeEmbedder)((*MCHNode)(nil))
-var _ = (fs.NodeReaddirer)((*MCHNode)(nil))
-var _ = (fs.NodeLookuper)((*MCHNode)(nil))
-var _ = (fs.NodeGetattrer)((*MCHNode)(nil))
-var _ = (fs.NodeGetxattrer)((*MCHNode)(nil))
-var _ = (fs.NodeSetxattrer)((*MCHNode)(nil))
-var _ = (fs.NodeOpener)((*MCHNode)(nil))
-var _ = (fs.NodeUnlinker)((*MCHNode)(nil))
-var _ = (fs.NodeRmdirer)((*MCHNode)(nil))
-var _ = (fs.NodeRenamer)((*MCHNode)(nil))
-var _ = (fs.NodeMkdirer)((*MCHNode)(nil))
-var _ = (fs.NodeCreater)((*MCHNode)(nil))
-var _ = (fs.NodeSetattrer)((*MCHNode)(nil))
-var _ = (fs.NodeMknoder)((*MCHNode)(nil))
+var (
+	_ = (fs.InodeEmbedder)((*MCHNode)(nil))
+	_ = (fs.NodeReaddirer)((*MCHNode)(nil))
+	_ = (fs.NodeLookuper)((*MCHNode)(nil))
+	_ = (fs.NodeGetattrer)((*MCHNode)(nil))
+	_ = (fs.NodeGetxattrer)((*MCHNode)(nil))
+	_ = (fs.NodeSetxattrer)((*MCHNode)(nil))
+	_ = (fs.NodeOpener)((*MCHNode)(nil))
+	_ = (fs.NodeUnlinker)((*MCHNode)(nil))
+	_ = (fs.NodeRmdirer)((*MCHNode)(nil))
+	_ = (fs.NodeRenamer)((*MCHNode)(nil))
+	_ = (fs.NodeMkdirer)((*MCHNode)(nil))
+	_ = (fs.NodeCreater)((*MCHNode)(nil))
+	_ = (fs.NodeSetattrer)((*MCHNode)(nil))
+	_ = (fs.NodeMknoder)((*MCHNode)(nil))
+)
 
 var ErrorInvalidFilesystemStatus = errors.New("invalid filesytem status")
 
@@ -189,9 +191,9 @@ func (mn *MCHNode) Getattr(ctx context.Context, file fs.FileHandle, out *fuse.At
 
 func (mn *MCHNode) getattr(out *fuse.Attr) {
 	if mn.file.IsDirectory() {
-		out.Mode = 0755
+		out.Mode = 0o755
 	} else {
-		out.Mode = 0644
+		out.Mode = 0o644
 	}
 
 	out.Size = mn.file.Size

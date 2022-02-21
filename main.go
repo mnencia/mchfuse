@@ -194,7 +194,7 @@ func parseConfig() config {
 	c.loadMountOptions(options)
 
 	if c.ConfigFilePath == "" {
-		if file, err := os.OpenFile(defaultConfigFilePath, os.O_RDONLY, 0666); err == nil {
+		if file, err := os.OpenFile(defaultConfigFilePath, os.O_RDONLY, 0o666); err == nil {
 			_ = file.Close()
 			c.ConfigFilePath = defaultConfigFilePath
 		}
