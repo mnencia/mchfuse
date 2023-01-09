@@ -7,6 +7,6 @@ require (
 	github.com/VividCortex/godaemon v0.0.0-20201215173923-eda977734e72
 	github.com/golang-jwt/jwt/v4 v4.4.1
 	github.com/hanwen/go-fuse/v2 v2.1.0
-	github.com/relvacode/iso8601 v1.1.0
+	github.com/relvacode/iso8601 v1.3.0
 	github.com/spf13/pflag v1.0.5
 )
