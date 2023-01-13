@@ -5,6 +5,14 @@ MCHFuse is a FUSE file system for mounting [Western Digital My Cloud Home](https
 It exposes the main storage area of your device using the
 [WD My Cloud Home Off-Device API](https://developer.westerndigital.com/develop/wd-my-cloud-home/api.html).
 
+## :warning: Deprecation notice :warning:
+
+Western Digital [deprecated My Cloud Home SDK/API](https://community.wd.com/t/cannot-access-api-reference-page/278409/4)
+in favor of [direct local access to the device using Samba (SMB) protocol](https://support-en.wd.com/app/answers/detailweb/a_id/34991)
+
+MCHFuse will continue to work as long as the API it uses remains available;
+however, it will not receive any further updates.
+
 ## Prerequisites
 
 To compile MCHFuse, you need at least go 1.13.
